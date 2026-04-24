@@ -93,6 +93,51 @@ export function CompanyForm({ company }: CompanyFormProps) {
             </div>
           </div>
 
+          {!isEditing && (
+            <>
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-medium mb-4">Administrador de la Empresa</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Crea el usuario administrador que tendrá acceso completo a esta empresa
+                </p>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="admin_email">Correo electrónico del administrador *</Label>
+                    <Input
+                      id="admin_email"
+                      name="admin_email"
+                      type="email"
+                      placeholder="admin@empresa.com"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="admin_full_name">Nombre completo del administrador *</Label>
+                    <Input
+                      id="admin_full_name"
+                      name="admin_full_name"
+                      placeholder="Juan Pérez"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="admin_password">Contraseña del administrador *</Label>
+                    <Input
+                      id="admin_password"
+                      name="admin_password"
+                      type="password"
+                      placeholder="Contraseña segura"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
           {isEditing && (
             <div className="flex items-center justify-between rounded-lg border border-border p-4">
               <div>

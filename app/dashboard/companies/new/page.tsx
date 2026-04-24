@@ -14,7 +14,7 @@ export default async function NewCompanyPage() {
       <div>
         <h1 className="text-2xl font-bold text-foreground">Nueva Empresa</h1>
         <p className="text-muted-foreground">
-          Registra una nueva empresa en el sistema
+          Registra una nueva empresa y crea su usuario administrador
         </p>
       </div>
 

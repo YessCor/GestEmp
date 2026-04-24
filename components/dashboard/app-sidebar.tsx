@@ -12,6 +12,7 @@ import {
   Package,
   Settings,
   ShoppingCart,
+  User,
   Users,
   ChevronDown,
 } from "lucide-react"
@@ -43,6 +44,7 @@ interface AppSidebarProps {
 
 const mainNavItems = [
   { href: "/dashboard", label: "Inicio", icon: Home },
+  { href: "/dashboard/profile", label: "Mi Perfil", icon: User },
   { href: "/dashboard/products", label: "Productos", icon: Package },
   { href: "/dashboard/categories", label: "Categorías", icon: Box },
   { href: "/dashboard/inventory", label: "Inventario", icon: BarChart3 },
