@@ -19,8 +19,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Pencil, Search, Trash2, Users, X } from "lucide-react"
-import { deleteCompany, deleteCompanyPermanently } from "./actions"
+import { MoreHorizontal, Pencil, Search, Trash2, Users, X, Power } from "lucide-react"
+import { deleteCompany, deleteCompanyPermanently, activateCompany } from "./actions"
 import { Card, CardContent } from "@/components/ui/card"
 import type { Company } from "@/lib/types/database"
 import {
@@ -42,6 +42,7 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
   const [search, setSearch] = useState("")
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false)
+  const [activateDialogOpen, setActivateDialogOpen] = useState(false)
   const [companyToDelete, setCompanyToDelete] = useState<Company | null>(null)
 
   const filteredCompanies = companies.filter(
@@ -119,14 +120,27 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="text-orange-600"
+                              className={company.is_active ? "text-orange-600" : "text-green-600"}
                               onClick={() => {
                                 setCompanyToDelete(company)
-                                setDeleteDialogOpen(true)
+                                if (company.is_active) {
+                                  setDeleteDialogOpen(true)
+                                } else {
+                                  setActivateDialogOpen(true)
+                                }
                               }}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Desactivar
+                              {company.is_active ? (
+                                <>
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Desactivar
+                                </>
+                              ) : (
+                                <>
+                                  <Power className="mr-2 h-4 w-4" />
+                                  Activar
+                                </>
+                              )}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
@@ -171,6 +185,34 @@ export function CompaniesTable({ companies }: CompaniesTableProps) {
                     onClick={() => setDeleteDialogOpen(false)}
                   >
                     Desactivar Empresa
+                  </button>
+                </form>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={activateDialogOpen} onOpenChange={setActivateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Activar empresa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción reactivará la empresa "{companyToDelete?.name}".
+              Los usuarios de esta empresa podrán acceder nuevamente al sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              {companyToDelete && (
+                <form action={activateCompany.bind(null, companyToDelete.id)}>
+                  <button
+                    type="submit"
+                    className="w-full bg-green-600 text-white hover:bg-green-700"
+                    onClick={() => setActivateDialogOpen(false)}
+                  >
+                    Activar Empresa
                   </button>
                 </form>
               )}

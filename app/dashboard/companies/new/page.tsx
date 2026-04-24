@@ -1,8 +1,13 @@
 import { redirect } from "next/navigation"
 import { getUser } from "@/app/auth/actions"
 import { CompanyForm } from "@/components/dashboard/companies/company-form"
+import { Messages } from "../messages"
 
-export default async function NewCompanyPage() {
+interface NewCompanyPageProps {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function NewCompanyPage({ searchParams }: NewCompanyPageProps) {
   const user = await getUser()
 
   if (user?.role !== "superadmin") {
@@ -17,6 +22,8 @@ export default async function NewCompanyPage() {
           Registra una nueva empresa y crea su usuario administrador
         </p>
       </div>
+
+      <Messages searchParams={searchParams} />
 
       <CompanyForm />
     </div>

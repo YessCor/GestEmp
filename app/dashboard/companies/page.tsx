@@ -5,8 +5,13 @@ import { CompaniesTable } from "@/components/dashboard/companies/companies-table
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
+import { Messages } from "./messages"
 
-export default async function CompaniesPage() {
+interface CompaniesPageProps {
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
+export default async function CompaniesPage({ searchParams }: CompaniesPageProps) {
   const user = await getUser()
 
   if (user?.role !== "superadmin") {
@@ -35,6 +40,8 @@ export default async function CompaniesPage() {
           </Link>
         </Button>
       </div>
+
+      <Messages searchParams={searchParams} />
 
       <CompaniesTable companies={companies || []} />
     </div>

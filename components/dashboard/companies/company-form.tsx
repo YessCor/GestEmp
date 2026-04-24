@@ -21,9 +21,11 @@ export function CompanyForm({ company }: CompanyFormProps) {
   const [state, formAction, isPending] = useActionState(
     async (_: unknown, formData: FormData) => {
       if (isEditing) {
-        return await updateCompany(company.id, formData)
+        await updateCompany(company.id, formData)
+      } else {
+        await createCompany(formData)
       }
-      return await createCompany(formData)
+      // Functions now redirect on success/error, so we don't return anything
     },
     null
   )
@@ -32,12 +34,6 @@ export function CompanyForm({ company }: CompanyFormProps) {
     <Card>
       <form action={formAction}>
         <CardContent className="space-y-6 pt-6">
-          {state?.error && (
-            <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-              {state.error}
-            </div>
-          )}
-
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Nombre de la empresa *</Label>

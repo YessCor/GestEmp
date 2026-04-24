@@ -8,7 +8,7 @@ import { headers } from "next/headers"
 export async function createCompany(formData: FormData) {
   const user = await getUser()
   if (user?.role !== "superadmin") {
-    return { error: "No tienes permisos para realizar esta acción" }
+    redirect("/dashboard/companies?error=No tienes permisos para realizar esta acción")
   }
 
   const supabase = await createClient()
@@ -30,9 +30,9 @@ export async function createCompany(formData: FormData) {
 
   if (companyError) {
     if (companyError.code === "23505") {
-      return { error: "Ya existe una empresa con ese RUC" }
+      redirect("/dashboard/companies/new?error=Ya existe una empresa con ese RUC")
     }
-    return { error: `Error al crear empresa: ${companyError.message}` }
+    redirect(`/dashboard/companies/new?error=Error al crear empresa: ${companyError.message}`)
   }
 
   // Then create the admin user for the company
@@ -58,16 +58,16 @@ export async function createCompany(formData: FormData) {
   if (signUpError) {
     // Rollback: delete the company if user signup fails
     await supabase.from("companies").delete().eq("id", company.id)
-    return { error: `Error al crear usuario administrador: ${signUpError.message}` }
+    redirect(`/dashboard/companies/new?error=Error al crear usuario administrador: ${signUpError.message}`)
   }
 
-  redirect("/dashboard/companies")
+  redirect("/dashboard/companies?success=Empresa y usuario administrador creados correctamente")
 }
 
 export async function updateCompany(id: string, formData: FormData) {
   const user = await getUser()
   if (user?.role !== "superadmin") {
-    return { error: "No tienes permisos para realizar esta acción" }
+    redirect("/dashboard/companies?error=No tienes permisos para realizar esta acción")
   }
 
   const supabase = await createClient()
@@ -86,8 +86,29 @@ export async function updateCompany(id: string, formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Ya existe una empresa con ese RUC" }
+      redirect(`/dashboard/companies/${id}?error=Ya existe una empresa con ese RUC`)
     }
+    redirect(`/dashboard/companies/${id}?error=Error al actualizar empresa: ${error.message}`)
+  }
+
+  redirect("/dashboard/companies?success=Empresa actualizada correctamente")
+}
+
+export async function activateCompany(id: string) {
+  const user = await getUser()
+  if (user?.role !== "superadmin") {
+    return { error: "No tienes permisos para realizar esta acción" }
+  }
+
+  const supabase = await createClient()
+
+  // Activar la empresa
+  const { error } = await supabase
+    .from("companies")
+    .update({ is_active: true })
+    .eq("id", id)
+
+  if (error) {
     return { error: error.message }
   }
 
@@ -118,20 +139,34 @@ export async function deleteCompany(id: string) {
 export async function deleteCompanyPermanently(id: string) {
   const user = await getUser()
   if (user?.role !== "superadmin") {
-    return { error: "No tienes permisos para realizar esta acción" }
+    redirect("/dashboard/companies?error=No tienes permisos para realizar esta acción")
   }
 
   const supabase = await createClient()
 
-  // Eliminar completamente la empresa (esto fallará si hay usuarios asociados)
+  // Primero verificar si la empresa tiene usuarios asociados
+  const { data: users, error: usersError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("company_id", id)
+
+  if (usersError) {
+    redirect(`/dashboard/companies?error=Error al verificar usuarios asociados`)
+  }
+
+  if (users && users.length > 0) {
+    redirect(`/dashboard/companies?error=No se puede eliminar la empresa porque tiene ${users.length} usuario(s) asociado(s). Desactiva la empresa en su lugar.`)
+  }
+
+  // Eliminar completamente la empresa
   const { error } = await supabase
     .from("companies")
     .delete()
     .eq("id", id)
 
   if (error) {
-    return { error: `Error al eliminar empresa: ${error.message}` }
+    redirect(`/dashboard/companies?error=Error al eliminar empresa: ${error.message}`)
   }
 
-  redirect("/dashboard/companies")
+  redirect("/dashboard/companies?success=Empresa eliminada permanentemente")
 }
