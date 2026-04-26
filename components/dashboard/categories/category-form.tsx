@@ -7,14 +7,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { createCategory, updateCategory } from "./actions"
 import type { Category } from "@/lib/types/database"
 
 interface CategoryFormProps {
   category?: Category
+  companies?: { id: string; name: string }[]
 }
 
-export function CategoryForm({ category }: CategoryFormProps) {
+export function CategoryForm({ category, companies }: CategoryFormProps) {
   const router = useRouter()
   const isEditing = !!category
 
@@ -35,6 +43,24 @@ export function CategoryForm({ category }: CategoryFormProps) {
           {state?.error && (
             <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
               {state.error}
+            </div>
+          )}
+
+          {companies && companies.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="company_id">Empresa *</Label>
+              <Select name="company_id" required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar empresa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((company) => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 

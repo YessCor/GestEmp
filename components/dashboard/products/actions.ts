@@ -15,14 +15,24 @@ export async function createProduct(formData: FormData) {
     redirect("/dashboard/products?error=No tienes permisos de administrador para crear productos")
   }
 
-  if (!user.company_id) {
+  let companyId = user.company_id
+
+  if (user.role === "superadmin" && !companyId) {
+    const companyIdFromForm = formData.get("company_id") as string
+    if (!companyIdFromForm) {
+      redirect("/dashboard/products/new?error=Selecciona una empresa para crear el producto")
+    }
+    companyId = companyIdFromForm
+  }
+
+  if (!companyId) {
     redirect("/dashboard/products/new?error=Tu usuario no tiene una empresa asignada. Contacta al administrador.")
   }
 
   const supabase = await createClient()
 
   const { error } = await supabase.from("products").insert({
-    company_id: user.company_id,
+    company_id: companyId,
     category_id: (formData.get("category_id") as string) || null,
     sku: formData.get("sku") as string,
     name: formData.get("name") as string,

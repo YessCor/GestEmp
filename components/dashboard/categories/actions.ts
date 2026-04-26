@@ -15,14 +15,24 @@ export async function createCategory(formData: FormData) {
     redirect("/dashboard/categories?error=No tienes permisos de administrador para crear categorías")
   }
 
-  if (!user.company_id) {
-    redirect("/dashboard/categories?error=Tu usuario no tiene una empresa asignada. Contacta al administrador.")
+  let companyId = user.company_id
+
+  if (user.role === "superadmin" && !companyId) {
+    const companyIdFromForm = formData.get("company_id") as string
+    if (!companyIdFromForm) {
+      redirect("/dashboard/categories/new?error=Selecciona una empresa para crear la categoría")
+    }
+    companyId = companyIdFromForm
+  }
+
+  if (!companyId) {
+    redirect("/dashboard/categories/new?error=Tu usuario no tiene una empresa asignada. Contacta al administrador.")
   }
 
   const supabase = await createClient()
 
   const { error } = await supabase.from("categories").insert({
-    company_id: user.company_id,
+    company_id: companyId,
     name: formData.get("name") as string,
     description: (formData.get("description") as string) || null,
   })
@@ -43,7 +53,12 @@ export async function createCategory(formData: FormData) {
 
 export async function updateCategory(id: string, formData: FormData) {
   const user = await getUser()
-  if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
+
+  if (!user) {
+    redirect("/auth/login")
+  }
+
+  if (user.role !== "admin" && user.role !== "superadmin") {
     redirect("/dashboard")
   }
 
