@@ -14,6 +14,20 @@ export default async function NewCategoryPage({ searchParams }: NewCategoryPageP
     redirect("/dashboard")
   }
 
+  if (!user.company_id) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Nueva Categoría</h1>
+          <p className="text-muted-foreground">
+            Crea una nueva categoría para tus productos
+          </p>
+        </div>
+        <Messages searchParams={{ error: "Tu usuario no tiene una empresa asignada. Contacta al administrador." }} />
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>

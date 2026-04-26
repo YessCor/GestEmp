@@ -6,8 +6,17 @@ import { getUser } from "@/app/auth/actions"
 
 export async function createInvoice(formData: FormData) {
   const user = await getUser()
-  if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
-    redirect("/dashboard")
+
+  if (!user) {
+    redirect("/auth/login?error=Debes iniciar sesión para crear facturas")
+  }
+
+  if (user.role !== "admin" && user.role !== "superadmin") {
+    redirect("/dashboard/invoices?error=No tienes permisos de administrador para crear facturas")
+  }
+
+  if (!user.company_id) {
+    redirect("/dashboard/invoices/new?error=Tu usuario no tiene una empresa asignada. Contacta al administrador.")
   }
 
   const supabase = await createClient()
@@ -38,6 +47,7 @@ export async function createInvoice(formData: FormData) {
   })
 
   if (error) {
+    console.error("Error creating invoice:", error)
     if (error.code === "23505") {
       redirect("/dashboard/invoices/new?error=Ya existe una factura con ese número")
     }

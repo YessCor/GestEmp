@@ -6,8 +6,17 @@ import { getUser } from "@/app/auth/actions"
 
 export async function createCategory(formData: FormData) {
   const user = await getUser()
-  if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
-    redirect("/dashboard")
+
+  if (!user) {
+    redirect("/auth/login?error=Debes iniciar sesión para crear categorías")
+  }
+
+  if (user.role !== "admin" && user.role !== "superadmin") {
+    redirect("/dashboard/categories?error=No tienes permisos de administrador para crear categorías")
+  }
+
+  if (!user.company_id) {
+    redirect("/dashboard/categories?error=Tu usuario no tiene una empresa asignada. Contacta al administrador.")
   }
 
   const supabase = await createClient()
@@ -19,8 +28,12 @@ export async function createCategory(formData: FormData) {
   })
 
   if (error) {
+    console.error("Error creating category:", error)
     if (error.code === "23505") {
       redirect("/dashboard/categories/new?error=Ya existe una categoría con ese nombre")
+    }
+    if (error.code === "42501") {
+      redirect("/dashboard/categories/new?error=No tienes permisos para insertar. Contacta al administrador.")
     }
     redirect(`/dashboard/categories/new?error=Error al crear categoría: ${error.message}`)
   }

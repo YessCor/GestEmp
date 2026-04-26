@@ -1,5 +1,16 @@
 export type UserRole = 'superadmin' | 'admin' | 'empleado'
 
+export interface User {
+  id: string
+  email: string
+  full_name: string
+  role: UserRole
+  company_id: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Company {
   id: string
   name: string

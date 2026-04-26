@@ -16,6 +16,20 @@ export default async function NewProductPage({ searchParams }: NewProductPagePro
     redirect("/dashboard")
   }
 
+  if (!user.company_id) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Nuevo Producto</h1>
+          <p className="text-muted-foreground">
+            Registra un nuevo producto en el catálogo
+          </p>
+        </div>
+        <Messages searchParams={{ error: "Tu usuario no tiene una empresa asignada. Contacta al administrador." }} />
+      </div>
+    )
+  }
+
   const supabase = await createClient()
   const { data: categories } = await supabase
     .from("categories")

@@ -3,6 +3,8 @@ import { getUser } from "@/app/auth/actions"
 import { createClient } from "@/lib/supabase/server"
 import { Wrench } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 export default async function InvoicesPage() {
   const user = await getUser()
 

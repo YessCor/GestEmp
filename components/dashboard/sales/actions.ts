@@ -6,8 +6,17 @@ import { getUser } from "@/app/auth/actions"
 
 export async function createSale(formData: FormData) {
   const user = await getUser()
-  if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
-    redirect("/dashboard")
+
+  if (!user) {
+    redirect("/auth/login?error=Debes iniciar sesión para crear ventas")
+  }
+
+  if (user.role !== "admin" && user.role !== "superadmin") {
+    redirect("/dashboard/sales?error=No tienes permisos de administrador para crear ventas")
+  }
+
+  if (!user.company_id) {
+    redirect("/dashboard/sales/new?error=Tu usuario no tiene una empresa asignada. Contacta al administrador.")
   }
 
   const supabase = await createClient()
@@ -16,7 +25,7 @@ export async function createSale(formData: FormData) {
     data: { session },
   } = await supabase.auth.getSession()
   if (!session?.user) {
-    redirect("/auth/login")
+    redirect("/auth/login?error=Sesión inválida. Inicia sesión nuevamente.")
   }
 
   const sale_number = formData.get("sale_number") as string
@@ -42,6 +51,7 @@ export async function createSale(formData: FormData) {
   })
 
   if (error) {
+    console.error("Error creating sale:", error)
     if (error.code === "23505") {
       redirect("/dashboard/sales/new?error=Ya existe una venta con ese número")
     }

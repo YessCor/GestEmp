@@ -6,8 +6,17 @@ import { getUser } from "@/app/auth/actions"
 
 export async function createProduct(formData: FormData) {
   const user = await getUser()
-  if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
-    redirect("/dashboard")
+
+  if (!user) {
+    redirect("/auth/login?error=Debes iniciar sesión para crear productos")
+  }
+
+  if (user.role !== "admin" && user.role !== "superadmin") {
+    redirect("/dashboard/products?error=No tienes permisos de administrador para crear productos")
+  }
+
+  if (!user.company_id) {
+    redirect("/dashboard/products/new?error=Tu usuario no tiene una empresa asignada. Contacta al administrador.")
   }
 
   const supabase = await createClient()
@@ -27,6 +36,7 @@ export async function createProduct(formData: FormData) {
   })
 
   if (error) {
+    console.error("Error creating product:", error)
     if (error.code === "23505") {
       redirect("/dashboard/products/new?error=Ya existe un producto con ese SKU")
     }
@@ -40,6 +50,10 @@ export async function updateProduct(id: string, formData: FormData) {
   const user = await getUser()
   if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
     redirect("/dashboard")
+  }
+
+  if (!user.company_id) {
+    redirect(`/dashboard/products/${id}?error=Tu usuario no tiene una empresa asignada. Contacta al administrador.`)
   }
 
   const supabase = await createClient()
