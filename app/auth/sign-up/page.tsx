@@ -27,10 +27,10 @@ export default function SignUpPage() {
             <span className="text-2xl font-bold text-foreground">GestEmp</span>
           </Link>
           <h1 className="mt-6 text-2xl font-bold text-foreground">
-            Crear Cuenta
+            Solicitar Acceso
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Registra tu empresa y comienza a gestionar tu negocio
+            Envía tu solicitud para registrar tu empresa. Un administrador la revisará y recibirás un email de confirmación.
           </p>
         </div>
 
@@ -93,25 +93,10 @@ export default function SignUpPage() {
                   autoComplete="email"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Mínimo 8 caracteres
-                </p>
-              </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Creando cuenta..." : "Crear Cuenta"}
+              {isPending ? "Enviando solicitud..." : "Enviar Solicitud"}
             </Button>
 
             <p className="text-center text-xs text-muted-foreground">

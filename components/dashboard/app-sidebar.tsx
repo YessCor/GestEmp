@@ -15,6 +15,7 @@ import {
   User,
   Users,
   ChevronDown,
+  ClipboardList,
 } from "lucide-react"
 import {
   Sidebar,
@@ -40,6 +41,7 @@ import type { UserWithCompany } from "@/lib/types/database"
 
 interface AppSidebarProps {
   user: UserWithCompany
+  pendingRequestsCount?: number
 }
 
 const mainNavItems = [
@@ -61,7 +63,7 @@ const superadminNavItems = [
   { href: "/dashboard/companies", label: "Empresas", icon: Building2 },
 ]
 
-export function AppSidebar({ user }: AppSidebarProps) {
+export function AppSidebar({ user, pendingRequestsCount = 0 }: AppSidebarProps) {
   const pathname = usePathname()
 
   const getInitials = (name: string) => {
@@ -152,6 +154,22 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+                {/* Solicitudes de registro con badge de pendientes */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/dashboard/requests")}>
+                    <Link href="/dashboard/requests" className="flex items-center justify-between w-full">
+                      <span className="flex items-center gap-2">
+                        <ClipboardList className="h-4 w-4" />
+                        <span>Solicitudes</span>
+                      </span>
+                      {pendingRequestsCount > 0 && (
+                        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">
+                          {pendingRequestsCount > 99 ? "99+" : pendingRequestsCount}
+                        </span>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

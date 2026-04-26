@@ -117,8 +117,21 @@ export interface InventoryLog {
 }
 
 // Tipos extendidos con relaciones
-export interface UserWithCompany extends User {
-  companies: Company | null
+
+export type RegistrationStatus = 'pending' | 'approved' | 'rejected'
+
+export interface RegistrationRequest {
+  id: string
+  full_name: string
+  email: string
+  company_name: string
+  company_ruc: string
+  status: RegistrationStatus
+  rejection_reason: string | null
+  reviewed_at: string | null
+  reviewed_by: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface ProductWithCategory extends Product {

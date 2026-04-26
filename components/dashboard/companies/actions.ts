@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { createAdminClient } from "@/lib/supabase/admin"
 import { redirect } from "next/navigation"
 import { getUser } from "@/app/auth/actions"
 import { headers } from "next/headers"
@@ -143,8 +144,9 @@ export async function deleteCompanyPermanently(id: string) {
   }
 
   const supabase = await createClient()
+  const adminSupabase = createAdminClient()
 
-  // Primero verificar si la empresa tiene usuarios asociados
+  // 1. Obtener todos los usuarios de la empresa
   const { data: users, error: usersError } = await supabase
     .from("users")
     .select("id")
@@ -154,11 +156,17 @@ export async function deleteCompanyPermanently(id: string) {
     redirect(`/dashboard/companies?error=Error al verificar usuarios asociados`)
   }
 
+  // 2. Eliminar cada usuario de Supabase Auth
   if (users && users.length > 0) {
-    redirect(`/dashboard/companies?error=No se puede eliminar la empresa porque tiene ${users.length} usuario(s) asociado(s). Desactiva la empresa en su lugar.`)
+    for (const u of users) {
+      const { error: deleteAuthError } = await adminSupabase.auth.admin.deleteUser(u.id)
+      if (deleteAuthError) {
+        console.error(`Error eliminando usuario ${u.id} de Auth:`, deleteAuthError)
+      }
+    }
   }
 
-  // Eliminar completamente la empresa
+  // 3. Eliminar completamente la empresa
   const { error } = await supabase
     .from("companies")
     .delete()
@@ -168,5 +176,6 @@ export async function deleteCompanyPermanently(id: string) {
     redirect(`/dashboard/companies?error=Error al eliminar empresa: ${error.message}`)
   }
 
-  redirect("/dashboard/companies?success=Empresa eliminada permanentemente")
+  redirect("/dashboard/companies?success=Empresa y sus usuarios asociados eliminados permanentemente")
 }
+
