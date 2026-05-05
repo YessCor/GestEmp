@@ -35,7 +35,7 @@ export default function SignUpPage() {
             Crear Cuenta
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Gestiona tus deudas o las de tu empresa
+            {registerType === "user" ? "Gestiona tus deudas personales" : "Administra tu empresa"}
           </p>
         </div>
 
@@ -64,7 +64,7 @@ export default function SignUpPage() {
               }`}
             >
               <Building2 className="h-4 w-4" />
-              🏢 Empresa (Admin)
+              🏢 Empresa
             </button>
           </div>
 
@@ -105,7 +105,7 @@ export default function SignUpPage() {
 
             <div className="space-y-4 rounded-lg bg-muted/50 p-4">
               <h3 className="text-sm font-medium text-foreground">
-                {registerType === "company" ? "Datos del Administrador" : "Datos Personales"}
+                {registerType === "company" ? "Datos del Responsable" : "Datos Personales"}
               </h3>
               <div className="space-y-2">
                 <Label htmlFor="fullName">Nombre completo</Label>

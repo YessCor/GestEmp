@@ -11,21 +11,7 @@ export const metadata: Metadata = {
   description: 'Plataforma SaaS multiempresa para gestión de inventario, ventas, facturación y reportes. Optimiza tu negocio con GestEmp.',
   generator: 'BIY Solutions',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/favicon.ico',
   },
 }
 
