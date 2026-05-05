@@ -88,13 +88,6 @@ CREATE POLICY "admin_create_company_users" ON public.users
     AND role = 'empleado'
   );
 
--- Empresa puede gestionar su propia empresa
-CREATE POLICY "empresa_manage_own_company" ON public.companies
-  FOR ALL USING (
-    id = get_user_company_id()
-    AND EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'empresa')
-  );
-
 -- Usuarios pueden actualizar su propio perfil (excepto rol y company_id)
 CREATE POLICY "users_update_own_profile" ON public.users
   FOR UPDATE USING (id = auth.uid());

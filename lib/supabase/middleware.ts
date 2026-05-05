@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Rutas públicas que no requieren autenticación
-  const publicRoutes = ['/', '/auth/login', '/auth/sign-up', '/auth/callback', '/auth/error', '/auth/registro-exitoso', '/auth/sign-up-success']
+  const publicRoutes = ['/', '/auth/login', '/auth/registro', '/auth/callback', '/auth/error', '/auth/registro-exitoso']
   const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname === route)
 
   // Si el usuario intenta acceder al dashboard sin estar autenticado
@@ -45,20 +45,9 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Si el usuario autenticado intenta acceder a páginas de auth, redirigir al dashboard
-  if (user && (request.nextUrl.pathname.startsWith('/auth/login') || request.nextUrl.pathname.startsWith('/auth/sign-up'))) {
-    // Obtener el rol del usuario para redirigir al dashboard correspondiente
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
+  if (user && (request.nextUrl.pathname.startsWith('/auth/login') || request.nextUrl.pathname.startsWith('/auth/registro'))) {
     const url = request.nextUrl.clone()
-    if (profile?.role === 'empresa') {
-      url.pathname = '/dashboard/empresa'
-    } else {
-      url.pathname = '/dashboard'
-    }
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 

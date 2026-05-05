@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   full_name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('superadmin', 'admin', 'empleado', 'user', 'empresa')) DEFAULT 'user',
+  role TEXT NOT NULL CHECK (role IN ('superadmin', 'admin', 'empleado')) DEFAULT 'empleado',
   company_id UUID REFERENCES public.companies(id) ON DELETE SET NULL,
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now(),
