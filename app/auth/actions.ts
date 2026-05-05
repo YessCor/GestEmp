@@ -25,70 +25,105 @@ export async function signIn(formData: FormData) {
 
 export async function signUp(formData: FormData) {
   const email = formData.get("email") as string
+  const password = formData.get("password") as string
   const fullName = formData.get("fullName") as string
+  const type = formData.get("type") as "user" | "company"
   const companyName = formData.get("companyName") as string
   const companyRuc = formData.get("companyRuc") as string
 
   const supabase = await createClient()
 
-  // Verificar si ya existe una solicitud pendiente con el mismo email o RUC
-  const { data: existing } = await supabase
-    .from("registration_requests")
-    .select("id, status")
-    .or(`email.eq.${email},company_ruc.eq.${companyRuc}`)
-    .in("status", ["pending", "approved"])
+  // Verificar si ya existe un usuario con el mismo email
+  const { data: existingUser } = await supabase
+    .from("users")
+    .select("id")
+    .eq("email", email)
     .maybeSingle()
 
-  if (existing) {
-    if (existing.status === "approved") {
-      return { error: "Ya existe una cuenta registrada con este correo o RUC." }
-    }
-    return { error: "Ya existe una solicitud pendiente con este correo o RUC. Por favor espera la revisión del administrador." }
+  if (existingUser) {
+    return { error: "Ya existe una cuenta registrada con este correo." }
   }
 
-  // Guardar la solicitud pendiente (sin crear cuenta en Auth)
-  const { error: insertError } = await supabase
-    .from("registration_requests")
+  // Si es empresa, verificar RUC
+  if (type === "company") {
+    const { data: existingCompany } = await supabase
+      .from("companies")
+      .select("id")
+      .eq("ruc", companyRuc)
+      .maybeSingle()
+
+    if (existingCompany) {
+      return { error: "Ya existe una empresa registrada con este RUC." }
+    }
+  }
+
+  // Crear usuario en Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName,
+        role: type === "company" ? "empresa" : "user",
+      },
+    },
+  })
+
+  if (authError) {
+    return { error: authError.message }
+  }
+
+  if (!authData.user) {
+    return { error: "Error al crear la cuenta. Intenta nuevamente." }
+  }
+
+  let companyId: string | null = null
+
+  // Crear empresa (para empresas) o empresa personal (para usuarios individuales)
+  if (type === "company") {
+    const { data: company, error: companyError } = await supabase
+      .from("companies")
+      .insert({ name: companyName, ruc: companyRuc })
+      .select()
+      .single()
+
+    if (companyError) {
+      return { error: `Error al crear la empresa: ${companyError.message}` }
+    }
+
+    companyId = company.id
+  } else {
+    // Usuario individual: crear una empresa personal
+    const { data: personalCompany, error: personalCompanyError } = await supabase
+      .from("companies")
+      .insert({ name: `Personal - ${fullName}`, ruc: `USER-${authData.user.id.slice(0, 8)}` })
+      .select()
+      .single()
+
+    if (personalCompanyError) {
+      return { error: `Error al crear el espacio personal: ${personalCompanyError.message}` }
+    }
+
+    companyId = personalCompany.id
+  }
+
+  // Crear perfil de usuario en public.users
+  const { error: userError } = await supabase
+    .from("users")
     .insert({
-      full_name: fullName,
+      id: authData.user.id,
       email,
-      company_name: companyName,
-      company_ruc: companyRuc,
-      status: "pending",
+      full_name: fullName,
+      role: type === "company" ? "empresa" : "user",
+      company_id: companyId,
+      is_active: true,
     })
 
-  if (insertError) {
-    return { error: `Error al enviar la solicitud: ${insertError.message}` }
+  if (userError) {
+    return { error: `Error al crear el perfil: ${userError.message}` }
   }
 
-  // --- INTEGRACIÓN BREVO ---
-  
-  // 1. Enviar confirmación al usuario
-  await sendRequestReceivedEmail(email, fullName)
-
-  // 2. Notificar al superadmin
-  // Buscamos al primer superadmin para notificarle
-  const { data: superadmin } = await supabase
-    .from("users")
-    .select("email")
-    .eq("role", "superadmin")
-    .limit(1)
-    .single()
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-  
-  if (superadmin?.email) {
-    await sendNewRequestNotificationEmail(
-      superadmin.email,
-      fullName,
-      email,
-      companyName,
-      companyRuc,
-      `${siteUrl}/dashboard/requests`
-    )
-  }
-
-  redirect("/auth/sign-up-pending")
+  redirect("/auth/registro-exitoso")
 }
 
 

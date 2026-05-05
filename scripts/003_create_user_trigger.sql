@@ -16,8 +16,8 @@ BEGIN
   user_company_id := (NEW.raw_user_meta_data ->> 'company_id')::UUID;
   
   -- Validar el rol
-  IF user_role NOT IN ('superadmin', 'admin', 'empleado') THEN
-    user_role := 'empleado';
+  IF user_role NOT IN ('superadmin', 'admin', 'empleado', 'user', 'empresa') THEN
+    user_role := 'user';
   END IF;
 
   -- Insertar el nuevo usuario en la tabla public.users
